@@ -7,7 +7,14 @@ export default class App extends React.Component {
       balance: 0,
       rate: 0.00,
       term: 15,
-      result: ''
+      result: '',
+      amort: [{
+        sPrincipal: 0,
+        payment: 0,
+        princPay: 0,
+        interPay: 0,
+        ePrincipal: 0
+      }]
     }
   }
 
@@ -24,20 +31,85 @@ export default class App extends React.Component {
     let rateCalc = Math.pow(1 + monthly, months);
 
     let result = Math.round(balance * (monthly * rateCalc) / (rateCalc - 1)) / 100;
-    if(result)
-    this.setState({
-      result: (<p id='output-p' className='col-sm-6 col-sm-offset-4' style={{borderTop : '2px solid #d0d0d0', borderTopLeftRadius : '5px', borderTopRightRadius : '5px'}}>$<span id='output'>{result}</span> is your montly payment.</p>)
-    });
+    if (result)
+      this.setState({
+        result: (<p id='output-p' className='col-sm-6 col-sm-offset-4' style={{ borderTop: '2px solid #d0d0d0', borderTopLeftRadius: '5px', borderTopRightRadius: '5px' }}>$<span id='output'>{result}</span> is your montly payment.</p>)
+      });
     else this.setState({
-      result: (<p id='output-p' className='col-sm-6 col-sm-offset-4' style={{borderTop : '2px solid #d0d0d0', borderTopLeftRadius : '5px', borderTopRightRadius : '5px'}}>${Math.round(balance / months) / 100} is your monthly payment.</p>)
+      result: (<p id='output-p' className='col-sm-6 col-sm-offset-4' style={{ borderTop: '2px solid #d0d0d0', borderTopLeftRadius: '5px', borderTopRightRadius: '5px' }}>${Math.round(balance / months) / 100} is your monthly payment.</p>)
     });
+    this.buildAmort(result);
   }
+
+  buildAmort(pay) {
+    let noAmort = {
+      sPrincipal: 0,
+      payment: 0,
+      princPay: 0,
+      interPay: 0,
+      ePrincipal: 0
+    }
+
+    if (this.state.rate == 0) {
+      this.setState({
+        amort: [noAmort]
+      })
+      return;
+   }
+    pay = pay * 100;
+    const rate = this.state.rate / 100 / 12;
+    const balance = this.state.balance * 100;
+    let iPay = rate * balance;
+
+    let amorts = [{
+      sPrincipal: balance / 100,
+      payment: pay / 100,
+      princPay: Math.round(pay - iPay) / 100,
+      interPay: Math.round(iPay) / 100,
+      ePrincipal: Math.round(balance - Math.round(pay - iPay)) / 100
+    }]
+    //alert(console.log(amorts[0]));
+
+    for (let i = 1; i < 12; i++) {
+      iPay = rate * (amorts[i - 1].ePrincipal * 100);
+      amorts[i] = {
+        sPrincipal: amorts[i - 1].ePrincipal,
+        payment: pay / 100,
+        princPay: Math.round(pay - iPay) / 100,
+        interPay: Math.round(iPay) / 100,
+        ePrincipal: (Math.round(amorts[i - 1].ePrincipal * 100 - Math.round(pay - iPay)) / 100).toFixed(2)
+      }
+    }
+    this.setState({
+      amort: amorts
+    });
+    //alert(console.log(amorts));
+  }
+
+  buildTable() {
+    const amort = this.state.amort;
+
+    return (<table>
+      <tbody>
+        {amort.map((element) => (
+          <tr key={element.sPrincipal}>
+            <td>{element.sPrincipal}</td>
+            <td>{element.payment}</td>
+            <td>{element.princPay}</td>
+            <td>{element.interPay}</td>
+            <td>{element.ePrincipal}</td>
+          </tr>
+        ))}
+      </tbody>
+    </table>)
+  }
+
   // your Javascript goes here
   render() {
     return (
       <div className='container form-horizontal'>
         <div className='form-group'>
-          <div className='col-sm-6 col-sm-offset-4' style={{borderBottom : '2px solid #d0d0d0', borderBottomLeftRadius : '5px', borderBottomRightRadius: '5px'}}>
+          <div className='col-sm-6 col-sm-offset-4' style={{ borderBottom: '2px solid #d0d0d0', borderBottomLeftRadius: '5px', borderBottomRightRadius: '5px' }}>
             <h1 id='page-title'>Mortgage Calculator</h1>
           </div>
         </div>
@@ -69,6 +141,9 @@ export default class App extends React.Component {
         </div>
         <div name='output' className='form-group'>
           {this.state.result}
+        </div>
+        <div name='amort-out' className='form-group'>
+          {(this.state.amort[0].sPrincipal != 0)? this.buildTable() : ''}
         </div>
       </div >
     );

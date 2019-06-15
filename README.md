@@ -1,0 +1,1 @@
+This project uses react to serve a simple mortgage calculator.
