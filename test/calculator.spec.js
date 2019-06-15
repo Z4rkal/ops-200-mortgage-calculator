@@ -9,6 +9,6 @@ describe('App Component', function () {
   this.slow(3000);
 
   it('should shallow render', () => {
-    expect(shallow(<App />).contains(<h3>Mortgage Calculator</h3>)).to.equal(true);
+    expect(shallow(<App />).contains(<h1>Mortgage Calculator</h1>)).to.equal(true);
   });
 });
