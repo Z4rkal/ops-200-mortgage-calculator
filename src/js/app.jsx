@@ -113,7 +113,7 @@ export default class App extends React.Component {
               <td>${element.princPay}</td>
               <td>${element.interPay}</td>
               <td>${element.ePrincipal}</td>
-            </tr> 
+            </tr>
           ))}
         </tbody>
       </table>
@@ -138,13 +138,13 @@ export default class App extends React.Component {
         <div className='form-group'>
           <label htmlFor='rate-input' className='col-sm-3 control-label' id='interest-desc'>Interest Rate (%)</label>
           <div className='col-sm-6'>
-            <input value={this.state.rate} value={this.state.rate} className='form-control' id='rate-input' name='rate' type='number' step='0.01' onChange={(e) => this.updateInput('rate', e)}></input>
+            <input value={this.state.rate} className='form-control' id='rate-input' name='rate' type='number' step='0.01' onChange={(e) => this.updateInput('rate', e)}></input>
           </div>
         </div>
         <div className='form-group'>
           <label htmlFor='term-select' className='col-sm-3 control-label' id='term-desc'>Loan Term (Years)</label>
           <div className='col-sm-6'>
-            <select value={this.state.term} value={this.state.term} className='form-control' id='term-select' name='term' onChange={(e) => this.updateInput('term', e)}>
+            <select value={this.state.term} className='form-control' id='term-select' name='term' onChange={(e) => this.updateInput('term', e)}>
               <option value='15'>15</option>
               <option value='30'>30</option>
             </select>
