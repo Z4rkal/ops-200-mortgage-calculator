@@ -1,96 +1,114 @@
-/* global define, it, describe, beforeEach, document */
 const express = require('express');
-const path = require('path');
-const nightmare = require('nightmare');
 const expect = require('chai').expect;
-const axios = require('axios');
+const path = require('path');
+const Nightmare = require('nightmare');
 
 const app = express();
-app.use(express.static(path.join(__dirname, '/../public')));
-app.use(express.static(path.join(__dirname, '/../dist')));
 
-app.listen(8888);
+app.use(express.static(path.join(__dirname, '../public')));
+app.use(express.static(path.join(__dirname, '../dist')));
 
-const url = 'http://localhost:8888/index.html';
+const url = 'http://localhost:8888';
 
-describe('Mortgage Calculator', function () {
-  this.timeout(6500);
-  this.slow(3000);
+const nightmare = new Nightmare();
 
-  it('returns the correct status code', () => axios.get(url)
-    .then(response => expect(response.status === 200)));
+describe('End to End Tests', () => {
+  let httpServer = null;
+  let pageObject = null;
 
-  describe('HTML', () => {
-    let pageObject;
-
-    before(() => {
-      pageObject = nightmare().goto(url);
-    });
-
-    it('should have the correct page title', () =>
-      pageObject
-        .evaluate(() => document.querySelector('body').innerText)
-        .then((text) => {
-          expect(text).to.contain('Mortgage Calculator');
-        })
-    );
-
-    it('should have an input element with the name of "balance"', () =>
-      pageObject
-        .evaluate(() => document.querySelector('input[name=balance]'))
-        .then(input => expect(input).to.exist)
-    );
-
-    it('should have an input element with the name of "rate"', () =>
-      pageObject
-        .evaluate(() => document.querySelector('input[name=rate]'))
-        .then(input => expect(input).to.exist)
-    );
-
-    it('should have an input element with the name of "term"', () =>
-      pageObject
-        .evaluate(() => document.querySelector('select[name=term]'))
-        .then(input => expect(input).to.exist)
-    );
-
-    it('should contain a button with the name of "submit"', () =>
-      pageObject
-        .evaluate(() => document.querySelector('button[name=submit]'))
-        .then(input => expect(input).to.exist)
-    );
+  before((done) => {
+    httpServer = app.listen(8888);
+    done();
   });
 
-  describe('Integration', () => {
-    let pageObject;
-
-    beforeEach(() => {
-      pageObject = nightmare();
-    });
-
-    it('should display correct mortgage payment', () =>
-      pageObject
-        .goto(url)
-        .type('input[name=balance]', '420000')
-        .type('input[name=rate]', '3.75')
-        .select('select[name=term]', '30')
-        .click('button[name=submit]')
-        .wait('#output')
-        .evaluate(() => document.querySelector('#output').innerHTML)
-        .end()
-        .then(result => expect(result).to.contain('1945.09', 'Expected mortgage payment didn\'t match'))
-    );
-
-    it('should display correct mortgage payment', () =>
-      pageObject
-        .goto(url)
-        .type('input[name=balance]', '670000')
-        .type('input[name=rate]', '4.25')
-        .select('select[name=term]', '15')
-        .click('button[name=submit]')
-        .wait('#output')
-        .evaluate(() => document.querySelector('#output').innerHTML)
-        .end()
-        .then(result => expect(result).to.contain('5040.27', 'Expected mortgage payment didn\'t match'))
-    );
+  beforeEach(() => {
+    pageObject = nightmare.goto(url);
   });
-});
+
+  after((done) => {
+    httpServer.close();
+    done();
+  });
+
+  // This is where your code is going to go
+  it('The page should have an h1 element that contains \'Mortgage Calculator\'', () =>
+    pageObject
+      .wait()
+      .evaluate(() => document.querySelector('h1').innerText == 'Mortgage Calculator' ? true : false)
+      .then(output => {
+        expect(output).to.be.true;
+      })
+  ).timeout(6500);
+
+  it('The page should have an input field for the balance', () =>
+    pageObject
+      .wait()
+      .evaluate(() => document.querySelector('#balance-input') != null ? true : false)
+      .then(output => {
+        expect(output).to.be.true;
+      })
+  ).timeout(6500);
+
+  it('The page should have an input field for the rate', () =>
+    pageObject
+      .wait()
+      .evaluate(() => document.querySelector('#balance-input') != null ? true : false)
+      .then(output => {
+        expect(output).to.be.true;
+      })
+  ).timeout(6500);
+
+  it('The page should have a select field for the term', () =>
+    pageObject
+      .wait()
+      .evaluate(() => document.querySelector('#term-select') != null ? true : false)
+      .then(output => {
+        expect(output).to.be.true;
+      })
+  ).timeout(6500);
+
+  it('The page should have a button for calculating the mortgage', () =>
+    pageObject
+      .wait()
+      .evaluate(() => document.querySelector('button').name == 'submit' ? true : false)
+      .then(output => {
+        expect(output).to.be.true;
+      })
+  ).timeout(6500);
+
+  it('The page shouldn\'t have an output field before calculating the mortgage', () =>
+    pageObject
+      .wait()
+      .evaluate(() => document.querySelector('#output-p') == null ? true : false)
+      .then(output => {
+        expect(output).to.be.true;
+      })
+  ).timeout(6500);
+
+  it('The output field should display after calculating the mortgage', () =>
+    pageObject
+      .wait()
+      .type('input[name=balance]', 200000)
+      .type('input[name=rate]', 8.4)
+      .select('select[name=term]', 30)
+      .click('button[name=submit]')
+      .evaluate(() => document.querySelector('#output-p') != null ? true : false)
+      .then(output => {
+        expect(output).to.be.true;
+      })
+  ).timeout(6500);
+
+  it('The page should correctly calculate mortgage', () =>
+    pageObject
+      .wait()
+      .type('input[name=balance]', 300000)
+      .type('input[name=rate]', 3.75)
+      .select('select[name=term]', 30)
+      .click('button[name=submit]')
+      .wait('#output')
+      .evaluate(() => document.querySelector('#output').innerText)
+      .then((outputText) => {
+        expect(outputText).to.equal('1389.35');
+      })
+  ).timeout(6500);
+})
