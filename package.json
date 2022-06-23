@@ -50,7 +50,7 @@
         "eslint-plugin-lodash-fp": "^2.2.0-a1",
         "eslint-plugin-react": "^7.14.2",
         "file-loader": "^4.0.0",
-        "jsdom": "^15.1.1",
+        "jsdom": "^16.5.0",
         "jsdom-global": "^3.0.2",
         "less": "^3.9.0",
         "less-plugin-autoprefix": "^2.0.0",
